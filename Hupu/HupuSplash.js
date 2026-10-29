@@ -28,11 +28,12 @@ function dump(u, raw) {
     let arr = [];
     try { arr = JSON.parse($persistentStore.read(KEY) || "[]"); } catch (_) {}
     const path = u.split("?")[0];
+    const isAdLike = /(interfaceAd|splash|launch|boot|noah|adver|advert|\/ads?\/|getAd|adx)/i.test(u);
     const isNew = !arr.some((x) => x.path === path);
     arr = arr.filter((x) => x.path !== path);
-    arr.unshift({ path, time: new Date().toLocaleString("zh-CN", { hour12: false }), body: raw.slice(0, 8000) });
-    $persistentStore.write(JSON.stringify(arr.slice(0, 15)), KEY);
-    if (isNew) $notification.post("虎扑开屏：已抓到响应", path.replace(/^https:\/\//, ""), "点此或在 Safari 打开 https://goblin.hupu.com/loon-dump 查看", { openUrl: "https://goblin.hupu.com/loon-dump" });
+    arr.unshift({ path, time: new Date().toLocaleTimeString("zh-CN", { hour12: false }) + "." + String(Date.now() % 1000).padStart(3, "0"), body: raw.slice(0, isAdLike ? 8000 : 2000) });
+    $persistentStore.write(JSON.stringify(arr.slice(0, 40)), KEY);
+    if (isNew && isAdLike) $notification.post("虎扑开屏：已抓到响应", path.replace(/^https:\/\//, ""), "点此或在 Safari 打开 https://goblin.hupu.com/loon-dump 查看", { openUrl: "https://goblin.hupu.com/loon-dump" });
   } catch (e) {
     console.log(`[虎扑开屏] 保存失败：${e}`);
   }

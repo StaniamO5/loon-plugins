@@ -29,7 +29,8 @@ const html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
 pre{white-space:pre-wrap;word-break:break-all;background:#f4f4f4;padding:10px;border-radius:8px;font-size:12px}
 h3{margin:20px 0 2px;font-size:15px;word-break:break-all}.t{color:#888;margin:0 0 6px;font-size:12px}
 button{padding:6px 12px;border-radius:6px;border:1px solid #888;background:none;color:inherit}</style></head>
-<body><h2>虎扑开屏抓包（${arr.length} 条）</h2>
-<p><a href="?clear=1">清空记录</a></p>${blocks}</body></html>`;
+<body><h2>虎扑抓包（${arr.length} 条，最新在前）</h2>
+<p><a href="?clear=1">清空记录</a> · <button onclick="navigator.clipboard.writeText(document.getElementById('all').innerText).then(()=>this.textContent='已复制')">复制全部路径</button></p>
+<pre id="all">${esc(arr.map((x) => x.time + "  " + x.path.replace(/^https:\/\//, "")).join("\n"))}</pre>${blocks}</body></html>`;
 
 $done({ response: { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }, body: html } });
