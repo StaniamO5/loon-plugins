@@ -37,9 +37,9 @@ DOMAIN-KEYWORD,pglstatp-toutiao,REJECT
 
 [Script]
 # 开屏（SDK 预取配置 + 自家开屏）、浮层、下拉刷新与二楼广告：保留结构、掏空内容，避免白屏等待
-http-response ^https:\/\/(api|www)\.zhihu\.com\/commercial_api\/(sdk\/prefetch|launch_v2|real_time_launch_v2|app_float_layer|real_time_pull_refresh_v2|real_time_second_floor_v2) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/da76a34/Zhihu/ZhihuSplash.js, requires-body=true, timeout=10, tag=知乎广告位去广告
+http-response ^https:\/\/(api|www)\.zhihu\.com\/commercial_api\/(sdk\/prefetch|launch_v2|real_time_launch_v2|app_float_layer|real_time_pull_refresh_v2|real_time_second_floor_v2) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/27c52ad/Zhihu/ZhihuSplash.js, requires-body=true, timeout=10, tag=知乎广告位去广告
 # 信息流：推荐、关注、问题下回答列表
-http-response ^https:\/\/api\.zhihu\.com\/(topstory\/recommend|moments(_v3)?\b|v4\/questions\/\d+\/feeds|questions\/\d+\/feeds) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/da76a34/Zhihu/ZhihuFeed.js, requires-body=true, timeout=10, tag=知乎信息流去广告
+http-response ^https:\/\/api\.zhihu\.com\/(topstory\/recommend|moments(_v3)?\b|v4\/questions\/\d+\/feeds|questions\/\d+\/feeds) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/27c52ad/Zhihu/ZhihuFeed.js, requires-body=true, timeout=10, tag=知乎信息流去广告
 
 [MITM]
 hostname = api.zhihu.com, www.zhihu.com
