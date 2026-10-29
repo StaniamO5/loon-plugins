@@ -21,6 +21,21 @@ const URL_KEY = /(img|image|pic|video|cover|url|link|src|schema|scheme|deeplink)
 // 状态码类字段保持原样
 const KEEP_KEY = /^(code|status|errno|err_no|error_code|errCode|msg|message|error|is_login|ts|timestamp)$/i;
 
+function dump(u, raw) {
+  try {
+    const KEY = "hupu_splash_dump";
+    let arr = [];
+    try { arr = JSON.parse($persistentStore.read(KEY) || "[]"); } catch (_) {}
+    const path = u.split("?")[0];
+    arr = arr.filter((x) => x.path !== path);
+    arr.unshift({ path, time: new Date().toLocaleString("zh-CN", { hour12: false }), body: raw.slice(0, 8000) });
+    $persistentStore.write(JSON.stringify(arr.slice(0, 6)), KEY);
+    $notification.post("虎扑开屏：已抓到响应", path.replace(/^https:\/\/goblin\.hupu\.com/, ""), "点此或在 Safari 打开 https://goblin.hupu.com/loon-dump 查看", { openUrl: "https://goblin.hupu.com/loon-dump" });
+  } catch (e) {
+    console.log(`[虎扑开屏] 保存失败：${e}`);
+  }
+}
+
 function walk(node, depth) {
   if (depth > 12 || node === null || typeof node !== "object") return;
   if (Array.isArray(node)) {
@@ -47,8 +62,8 @@ function walk(node, depth) {
 
 try {
   const obj = JSON.parse(body);
-  // 调试：把原始响应前 1500 字打到日志，便于抓到真实结构后精确适配
-  console.log(`[虎扑开屏] ${url.split("?")[0]}\n${body.slice(0, 1500)}`);
+  // 调试：保存原始响应，Safari 打开 https://goblin.hupu.com/loon-dump 可查看
+  dump(url, body);
   walk(obj, 0);
   body = JSON.stringify(obj);
 } catch (e) {
