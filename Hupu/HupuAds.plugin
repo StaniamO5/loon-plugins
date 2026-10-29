@@ -8,14 +8,16 @@
 #!loon_version=3.2.1(733)
 
 [Rewrite]
-# 广告平台接口：开屏、下拉刷新广告、信息流插入广告（getOther/v*、getOther/batch 等）
-^https:\/\/goblin\.hupu\.com\/\d+\/[\d.]+\/interfaceAd\/ reject-dict
+# 信息流插入广告（getOther/v*、getOther/batch）：不阻塞启动，可以直接返回空
+^https:\/\/goblin\.hupu\.com\/\d+\/[\d.]+\/interfaceAd\/getOther\/ reject-dict
 # 赛事页位置轮播广告
 ^https:\/\/games\.mobileapi\.hupu\.com\/\d+\/[\d.]+\/bplapi\/banner\/getLocationBanners reject-dict
 # 图集推广模块
 ^https:\/\/fairy\.mobileapi\.hupu\.com\/gallery\/getmod2 reject-dict
 
 [Script]
+# 开屏、下拉刷新广告：保留成功结构、掏空内容，避免白屏等待超时
+http-response ^https:\/\/goblin\.hupu\.com\/\d+\/[\d.]+\/interfaceAd\/(?!getOther\/) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Hupu/HupuSplash.js, requires-body=true, timeout=10, tag=虎扑开屏去广告
 # 首页/步行街信息流、热榜、我的页、轮播：只删带广告标记的条目
 http-response ^https:\/\/bbs\.mobileapi\.hupu\.com\/\d+\/[\d.]+\/bbsallapi\/lego\/data script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Hupu/HupuAds.js, requires-body=true, timeout=10, tag=虎扑信息流去广告
 http-response ^https:\/\/games\.mobileapi\.hupu\.com\/\d+\/[\d.]+\/buffer\/hotList script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Hupu/HupuAds.js, requires-body=true, timeout=10, tag=虎扑热榜去广告
