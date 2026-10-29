@@ -1,8 +1,12 @@
 /*
- * 知乎开屏去广告 - Loon http-response 脚本
- * 匹配：api.zhihu.com/commercial_api/(launch_v2|real_time_launch_v2)
- *   launch_v2           预下载开屏素材（使用过程中拉取并缓存，下次启动用）
- *   real_time_launch_v2 冷启动时实时请求的开屏
+ * 知乎广告位去广告（含开屏）- Loon http-response 脚本
+ * 匹配：api.zhihu.com/commercial_api/ 下的
+ *   sdk/prefetch                 广告 SDK 预取配置：下发优量汇（dsp 1054）、穿山甲（dsp 1053）
+ *                                的 app_id / 代码位，App 缓存后下次冷启动直接调 SDK 拉开屏（摇一摇广告来源）
+ *   launch_v2 / real_time_launch_v2   自家开屏（预下载 / 实时）
+ *   app_float_layer              浮层广告
+ *   real_time_pull_refresh_v2    下拉刷新广告
+ *   real_time_second_floor_v2    下拉“二楼”广告
  * 不 reject：返回 {} 或失败时，App 会沿用旧缓存或转去穿山甲/优量汇兜底，
  *   在启动页等满超时（白屏）。这里保留结构，只把广告内容掏空，
  *   让 App 正常得出“这次没有开屏”的结论。
@@ -10,22 +14,9 @@
 
 let body = $response.body;
 
-// 【临时调试】改写前保存原始响应
-try {
-  const KEY = "zhihu_dump";
-  let arr = [];
-  try { arr = JSON.parse($persistentStore.read(KEY) || "[]"); } catch (_) {}
-  const path = $request.url.split("?")[0];
-  const isNew = !arr.some((x) => x.path === path);
-  arr = arr.filter((x) => x.path !== path);
-  const d = new Date();
-  arr.unshift({ path, query: ($request.url.split("?")[1] || "").slice(0, 300), time: d.toLocaleTimeString("zh-CN", { hour12: false }) + "." + String(d.getMilliseconds()).padStart(3, "0"), body: (body || "").slice(0, 10000) });
-  $persistentStore.write(JSON.stringify(arr.slice(0, 30)), KEY);
-  if (isNew) $notification.post("知乎开屏：已抓到响应", path.replace(/^https:\/\//, ""), "打开 https://api.zhihu.com/loon-dump 查看", { openUrl: "https://api.zhihu.com/loon-dump" });
-} catch (_) {}
 
 // 广告/素材列表 → 清空
-const LIST_KEY = /^(launch_ads|launchAds|ads|ad_list|adList|data|list|items|creatives?|materials?|resources?|splash(es|_list)?)$/i;
+const LIST_KEY = /^(sdk|sdks|sdk_list|launch_ads|launchAds|ads|ad_list|adList|data|list|items|creatives?|materials?|resources?|splash(es|_list)?)$/i;
 // 时长、次数、倒计时 → 0
 const NUM_KEY = /(duration|countdown|count_down|show_time|showTime|show_count|showCount|max_show|daily_show|display_time|timeout|wait_time)$/i;
 // 展示开关 → false

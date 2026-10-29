@@ -1,5 +1,5 @@
 #!name=知乎去广告
-#!desc=去除知乎开屏广告（改写而非拦截，不白屏等待）、推荐/关注/问题页信息流广告、回答与文章底部广告卡、首页横幅、悬浮图标与弹窗。
+#!desc=去除知乎开屏广告（含优量汇/穿山甲摇一摇，改写而非拦截，不白屏等待）、下拉刷新与二楼广告、浮层、推荐/关注/问题页信息流广告、回答与文章底部广告卡、首页横幅、悬浮图标与弹窗。启用后需在知乎里刷一会儿、切几次后台，刷新本地广告缓存。
 #!author=Stan
 #!homepage=https://github.com/StaniamO5/loon-plugins
 #!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Zhihu.png
@@ -20,14 +20,10 @@
 ^https:\/\/api\.zhihu\.com\/(bazaar\/float_window|market\/popovers_v2) reject-dict
 
 [Script]
-# 【临时调试】Safari 打开 https://api.zhihu.com/loon-dump 查看抓到的响应
-http-request ^https:\/\/api\.zhihu\.com\/loon-dump script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Zhihu/ZhihuDump.js, timeout=10, tag=知乎抓包查看
-# 开屏：预下载(launch_v2) 与实时开屏(real_time_launch_v2)，保留结构、掏空内容
-http-response ^https:\/\/api\.zhihu\.com\/commercial_api\/(launch_v2|real_time_launch_v2) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Zhihu/ZhihuSplash.js, requires-body=true, timeout=10, tag=知乎开屏去广告
+# 开屏（SDK 预取配置 + 自家开屏）、浮层、下拉刷新与二楼广告：保留结构、掏空内容，避免白屏等待
+http-response ^https:\/\/api\.zhihu\.com\/commercial_api\/(sdk\/prefetch|launch_v2|real_time_launch_v2|app_float_layer|real_time_pull_refresh_v2|real_time_second_floor_v2) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Zhihu/ZhihuSplash.js, requires-body=true, timeout=10, tag=知乎广告位去广告
 # 信息流：推荐、关注、问题下回答列表
 http-response ^https:\/\/api\.zhihu\.com\/(topstory\/recommend|moments(_v3)?\b|v4\/questions\/\d+\/feeds|questions\/\d+\/feeds) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Zhihu/ZhihuFeed.js, requires-body=true, timeout=10, tag=知乎信息流去广告
-# 【临时调试】记录商业化接口及路径含 launch/splash/ad 的响应（不改写）
-http-response ^https:\/\/api\.zhihu\.com\/(?!loon-dump)[^?]*(commercial|launch|splash|advert|\/ads?\/|ad-|_ad|shake) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Zhihu/ZhihuRecord.js, requires-body=true, timeout=10, tag=知乎抓包记录
 
 [MITM]
 hostname = api.zhihu.com
