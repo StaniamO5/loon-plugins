@@ -1,0 +1,29 @@
+#!name=知乎去广告
+#!desc=去除知乎开屏广告（改写而非拦截，不白屏等待）、推荐/关注/问题页信息流广告、回答与文章底部广告卡、首页横幅、悬浮图标与弹窗。
+#!author=Stan
+#!homepage=https://github.com/StaniamO5/loon-plugins
+#!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Zhihu.png
+#!tag=去广告
+#!system=iOS,iPadOS
+#!loon_version=3.2.1(733)
+
+[Rewrite]
+# 回答/文章底部广告卡、首页顶部横幅（非启动阶段，直接返回空不影响启动）
+^https:\/\/api\.zhihu\.com\/commercial_api\/(answer|article)\/\d+\/bottom-v2 reject-dict
+^https:\/\/api\.zhihu\.com\/commercial_api\/banners_v3\/app_topstory_banner reject-dict
+# 广告样式服务
+^https:\/\/api\.zhihu\.com\/ad-style-service\/request reject-dict
+# 首页悬浮图标、首页弹窗
+^https:\/\/api\.zhihu\.com\/content-distribution-core\/bubble\/common\/settings reject-dict
+^https:\/\/api\.zhihu\.com\/root\/window reject-dict
+# 会员页浮窗与弹出推广
+^https:\/\/api\.zhihu\.com\/(bazaar\/float_window|market\/popovers_v2) reject-dict
+
+[Script]
+# 开屏：预下载(launch_v2) 与实时开屏(real_time_launch_v2)，保留结构、掏空内容
+http-response ^https:\/\/api\.zhihu\.com\/commercial_api\/(launch_v2|real_time_launch_v2) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Zhihu/ZhihuSplash.js, requires-body=true, timeout=10, tag=知乎开屏去广告
+# 信息流：推荐、关注、问题下回答列表
+http-response ^https:\/\/api\.zhihu\.com\/(topstory\/recommend|moments(_v3)?\b|v4\/questions\/\d+\/feeds|questions\/\d+\/feeds) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Zhihu/ZhihuFeed.js, requires-body=true, timeout=10, tag=知乎信息流去广告
+
+[MITM]
+hostname = api.zhihu.com
