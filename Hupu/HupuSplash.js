@@ -28,7 +28,7 @@ function dump(u, raw) {
     let arr = [];
     try { arr = JSON.parse($persistentStore.read(KEY) || "[]"); } catch (_) {}
     const path = u.split("?")[0];
-    const isAdLike = /(interfaceAd|splash|launch|boot|noah|adver|advert|\/ads?\/|getAd|adx)/i.test(u);
+    const isAdLike = /(interfaceAd|splash|launch|boot|noah|adver|advert|\/ads?\/|getAd|adx|goblin\.hupu\.com|themis\.hupu\.com)/i.test(u);
     const isNew = !arr.some((x) => x.path === path);
     arr = arr.filter((x) => x.path !== path);
     arr.unshift({ path, time: new Date().toLocaleTimeString("zh-CN", { hour12: false }) + "." + String(Date.now() % 1000).padStart(3, "0"), body: raw.slice(0, isAdLike ? 8000 : 2000) });
