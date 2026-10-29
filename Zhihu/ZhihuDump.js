@@ -26,7 +26,7 @@ const blocks = arr.length
   ? arr.map((x, i) => `<h3>#${i + 1} ${esc(x.path.replace(/^https:\/\//, ""))}</h3>
 <p class="t">${esc(x.time)}</p>
 <button onclick="navigator.clipboard.writeText(document.getElementById('b${i}').innerText).then(()=>this.textContent='已复制')">复制这条</button>
-${x.query ? `<p class="t">?${esc(x.query)}</p>` : ""}<pre id="b${i}">${esc(pretty(x.body))}</pre>`).join("")
+${x.query ? `<p class="t">?${esc(x.query)}</p>` : ""}<pre id="b${i}">${x.body ? esc(pretty(x.body)) : "（响应为空）"}</pre>`).join("")
   : "<p>还没有记录。冷启动一次知乎后刷新本页。</p>";
 
 const html = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
@@ -37,7 +37,9 @@ pre{white-space:pre-wrap;word-break:break-all;background:#f4f4f4;padding:10px;bo
 h3{margin:20px 0 2px;font-size:15px;word-break:break-all}.t{color:#888;margin:0 0 6px;font-size:12px}
 button{padding:6px 12px;border-radius:6px;border:1px solid #888;background:none;color:inherit}</style></head>
 <body><h2>知乎抓包（${arr.length} 条，最新在前）</h2>
-<p><a href="?clear=1">清空记录</a> · <button onclick="navigator.clipboard.writeText(document.getElementById('all').innerText).then(()=>this.textContent='已复制')">复制全部路径</button></p>
+<p><a href="?clear=1">清空记录</a> · <button onclick="navigator.clipboard.writeText(document.getElementById('all').innerText).then(()=>this.textContent='已复制')">复制全部路径</button>
+<button style="font-weight:600" onclick="navigator.clipboard.writeText(document.getElementById('full').value).then(()=>this.textContent='已复制')">复制全部内容</button></p>
+<textarea id="full" style="display:none">${esc(arr.map((x) => "【" + x.path.replace(/^https:\/\//, "") + "】\n" + (x.body ? pretty(x.body) : "（响应为空）")).join("\n\n"))}</textarea>
 <pre id="all">${esc(arr.map((x) => x.time + "  " + x.path.replace(/^https:\/\//, "")).join("\n"))}</pre>${blocks}</body></html>`;
 
 $done({ response: { status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }, body: html } });
