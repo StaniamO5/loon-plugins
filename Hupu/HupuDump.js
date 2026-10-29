@@ -11,6 +11,13 @@ if (/[?&]clear=1/.test($request.url)) $persistentStore.write("[]", KEY);
 let arr = [];
 try { arr = JSON.parse($persistentStore.read(KEY) || "[]"); } catch (_) {}
 
+// ?q=关键词1,关键词2 只显示路径包含任一关键词的记录
+const qm = $request.url.match(/[?&]q=([^&]+)/);
+if (qm) {
+  const qs = decodeURIComponent(qm[1]).split(",").map((x) => x.trim()).filter(Boolean);
+  arr = arr.filter((x) => qs.some((q) => x.path.includes(q)));
+}
+
 function pretty(b) {
   try { return JSON.stringify(JSON.parse(b), null, 2); } catch (_) { return b; }
 }
