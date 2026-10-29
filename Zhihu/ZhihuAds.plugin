@@ -7,6 +7,16 @@
 #!system=iOS,iPadOS
 #!loon_version=3.2.1(733)
 
+[Rule]
+# 兜底：优量汇（腾讯广点通）SDK 的广告请求与素材域名（摇一摇开屏来源）
+DOMAIN-SUFFIX,gdt.qq.com,REJECT
+DOMAIN,sdk.e.qq.com,REJECT
+DOMAIN-SUFFIX,gdtimg.com,REJECT
+DOMAIN,pgdt.gtimg.cn,REJECT
+# 兜底：穿山甲 SDK
+DOMAIN-KEYWORD,pangolin-sdk-toutiao,REJECT
+DOMAIN-KEYWORD,pglstatp-toutiao,REJECT
+
 [Rewrite]
 # 回答/文章底部广告卡、首页顶部横幅（非启动阶段，直接返回空不影响启动）
 ^https:\/\/api\.zhihu\.com\/commercial_api\/(answer|article)\/\d+\/bottom-v2 reject-dict
