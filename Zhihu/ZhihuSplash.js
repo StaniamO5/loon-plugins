@@ -1,47 +1,28 @@
 /*
  * 知乎广告位去广告（含开屏）- Loon http-response 脚本
  * 匹配：api.zhihu.com/commercial_api/ 下的
- *   sdk/prefetch                 广告 SDK 预取配置：下发优量汇（dsp 1054）、穿山甲（dsp 1053）
- *                                的 app_id / 代码位，App 缓存后下次冷启动直接调 SDK 拉开屏（摇一摇广告来源）
- *   launch_v2 / real_time_launch_v2   自家开屏（预下载 / 实时）
- *   app_float_layer              浮层广告
- *   real_time_pull_refresh_v2    下拉刷新广告
- *   real_time_second_floor_v2    下拉“二楼”广告
- * 注意：实时开屏的响应形如 {"launch": "{\"ads\":[...],...}"}，广告列表是嵌在字符串里的 JSON，
- *   脚本会解析这类字符串字段再处理。
- * 不 reject：返回 {} 或失败时，App 会沿用旧缓存或转去穿山甲/优量汇兜底，
- *   在启动页等满超时（白屏）。这里保留结构，只把广告内容掏空，
- *   让 App 正常得出“这次没有开屏”的结论。
+ *   launch_v2 / real_time_launch_v2  开屏（预下载 / 实时），Tanx、京东等通过知乎 ADX 中标的广告都从这里下发
+ *   sdk/prefetch                     优量汇、穿山甲 SDK 代码位配置
+ *   app_float_layer                  浮层广告
+ *   real_time_pull_refresh_v2        下拉刷新广告
+ *   real_time_second_floor_v2        下拉“二楼”广告
+ *
+ * 做法：只清空 ads / sdk 两个数组，其余字段原样保留，App 得到的是正常的“本次无广告”。
+ *   不 reject：返回 {} 或请求失败时，App 会沿用旧缓存或转去 SDK 兜底，在启动页等满超时（白屏）。
+ * 注意：开屏响应形如 {"launch": "{\"ads\":[...]}"}，广告列表在字符串化的 JSON 里，
+ *   遇到以 { 或 [ 开头的字符串字段会先解析、处理，再序列化回去。
  */
 
 let body = $response.body;
-
-
-// 广告/素材列表 → 清空
-const LIST_KEY = /^(sdk|sdks|sdk_list|launch_ads|launchAds|ads|ad_list|adList|data|list|items|creatives?|materials?|resources?|splash(es|_list)?)$/i;
-// 时长、次数、倒计时 → 0
-const NUM_KEY = /(duration|countdown|count_down|show_time|showTime|show_count|showCount|max_show|daily_show|display_time|timeout|wait_time)$/i;
-// 展示开关 → false
-const SWITCH_KEY = /^(show|is_show|need_show|enable|enabled|open|has_ad|ad_switch|is_ad_show|show_ad)$/i;
-// 状态字段保持原样
-const KEEP_KEY = /^(code|status|error|errcode|message|msg|success|paging)$/i;
 
 function walk(node, depth) {
   if (depth > 10 || !node || typeof node !== "object") return;
   if (Array.isArray(node)) return node.forEach((x) => walk(x, depth + 1));
   for (const k of Object.keys(node)) {
-    if (KEEP_KEY.test(k)) continue;
     const v = node[k];
-    if (Array.isArray(v)) {
-      if (LIST_KEY.test(k)) node[k] = [];
-      else walk(v, depth + 1);
-    } else if (typeof v === "number" && NUM_KEY.test(k)) {
-      node[k] = 0;
-    } else if (typeof v === "boolean" && SWITCH_KEY.test(k)) {
-      node[k] = false;
+    if ((k === "ads" || k === "sdk") && Array.isArray(v)) {
+      node[k] = [];
     } else if (typeof v === "string" && /^\s*[\[{]/.test(v)) {
-      // 知乎把广告 JSON 再序列化成字符串塞进字段里，如 {"launch": "{\"ads\":[...]}"}
-      // 需要解析 → 掏空 → 再序列化回字符串，保持原有格式
       try {
         const inner = JSON.parse(v);
         walk(inner, depth + 1);
@@ -58,8 +39,7 @@ try {
   walk(obj, 0);
   body = JSON.stringify(obj);
 } catch (e) {
-  // 响应为空或非 JSON 时原样放行，避免制造“请求异常”
-  console.log(`[知乎开屏] 非 JSON，原样放行：${e}`);
+  // 响应为空或非 JSON 时原样放行
 }
 
 $done({ body });
