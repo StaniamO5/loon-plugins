@@ -1,5 +1,5 @@
-#!name=哔哩哔哩去开屏广告
-#!desc=清空 B 站 App 开屏广告列表（普通开屏、品牌开屏、活动开屏），并拉长广告拉取间隔。首次启用后建议清除 App 缓存或重装一次。
+#!name=哔哩哔哩去广告
+#!desc=去除 B 站 App 开屏广告（普通、品牌、活动开屏）及首页推荐的横幅轮播广告和信息流广告卡。首次启用后建议清除 App 缓存或重装一次。
 #!author=Stan
 #!homepage=https://github.com/StaniamO5/loon-plugins
 #!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/bilibili.png
@@ -10,6 +10,9 @@
 [Script]
 # 开屏素材预下载(list)、展示策略(show)、品牌开屏(brand/list)、活动开屏(event/list2)
 http-response ^https:\/\/app\.bilibili\.com\/x\/v2\/splash\/(list|show|brand\/list|event\/list2) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Bilibili/BiliSplash.js, requires-body=true, timeout=10, tag=B站开屏去广告
+
+# 首页推荐：横幅轮播广告、信息流广告卡
+http-response ^https:\/\/app\.bilibili\.com\/x\/v2\/feed\/index\? script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Bilibili/BiliFeed.js, requires-body=true, timeout=10, tag=B站首页去广告
 
 [MITM]
 hostname = app.bilibili.com
