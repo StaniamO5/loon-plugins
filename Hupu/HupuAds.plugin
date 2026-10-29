@@ -1,0 +1,26 @@
+#!name=虎扑去广告
+#!desc=去除虎扑 App 开屏广告、下拉刷新广告、信息流与热榜中的广告卡、轮播广告位。
+#!author=Stan
+#!homepage=https://github.com/StaniamO5/loon-plugins
+#!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Hupu.png
+#!tag=去广告
+#!system=iOS,iPadOS
+#!loon_version=3.2.1(733)
+
+[Rewrite]
+# 广告平台接口：开屏、下拉刷新广告、信息流插入广告（getOther/v*、getOther/batch 等）
+^https:\/\/goblin\.hupu\.com\/\d+\/[\d.]+\/interfaceAd\/ reject-dict
+# 赛事页位置轮播广告
+^https:\/\/games\.mobileapi\.hupu\.com\/\d+\/[\d.]+\/bplapi\/banner\/getLocationBanners reject-dict
+# 图集推广模块
+^https:\/\/fairy\.mobileapi\.hupu\.com\/gallery\/getmod2 reject-dict
+
+[Script]
+# 首页/步行街信息流、热榜、我的页、轮播：只删带广告标记的条目
+http-response ^https:\/\/bbs\.mobileapi\.hupu\.com\/\d+\/[\d.]+\/bbsallapi\/lego\/data script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Hupu/HupuAds.js, requires-body=true, timeout=10, tag=虎扑信息流去广告
+http-response ^https:\/\/games\.mobileapi\.hupu\.com\/\d+\/[\d.]+\/buffer\/hotList script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Hupu/HupuAds.js, requires-body=true, timeout=10, tag=虎扑热榜去广告
+http-response ^https:\/\/games\.mobileapi\.hupu\.com\/\d+\/[\d.]+\/bplapi\/user\/v1\/more script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Hupu/HupuAds.js, requires-body=true, timeout=10, tag=虎扑我的页去广告
+http-response ^https:\/\/fairy\.mobileapi\.hupu\.com\/mang\/preview\/banners script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Hupu/HupuAds.js, requires-body=true, timeout=10, tag=虎扑轮播去广告
+
+[MITM]
+hostname = goblin.hupu.com, games.mobileapi.hupu.com, bbs.mobileapi.hupu.com, fairy.mobileapi.hupu.com
