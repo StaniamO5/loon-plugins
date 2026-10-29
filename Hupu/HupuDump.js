@@ -16,7 +16,7 @@ function pretty(b) {
 }
 
 const blocks = arr.length
-  ? arr.map((x, i) => `<h3>#${i + 1} ${esc(x.path.replace(/^https:\/\/goblin\.hupu\.com/, ""))}</h3>
+  ? arr.map((x, i) => `<h3>#${i + 1} ${esc(x.path.replace(/^https:\/\//, ""))}</h3>
 <p class="t">${esc(x.time)}</p>
 <button onclick="navigator.clipboard.writeText(document.getElementById('b${i}').innerText).then(()=>this.textContent='已复制')">复制这条</button>
 <pre id="b${i}">${esc(pretty(x.body))}</pre>`).join("")

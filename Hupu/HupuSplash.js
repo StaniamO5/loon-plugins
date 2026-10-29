@@ -1,6 +1,7 @@
 /*
  * 虎扑开屏去广告 - Loon http-response 脚本
- * 匹配：goblin.hupu.com/…/interfaceAd/ 下除 getOther 以外的接口（开屏、下拉刷新广告）
+ * 匹配：goblin.hupu.com/…/interfaceAd/ 全部接口（开屏、下拉刷新、信息流广告位）
+ *       以及调试期间 *.hupu.com 上路径疑似广告/开屏的请求（只记录，不改写）
  * 为什么不 reject：返回 {} 或请求失败时，客户端判定“广告没拿到”，
  *   会停在白色启动页等满超时（或转去请求兜底广告）才进首页。
  *   这里保留接口的成功状态码和整体结构，只把广告内容掏空，
@@ -27,10 +28,11 @@ function dump(u, raw) {
     let arr = [];
     try { arr = JSON.parse($persistentStore.read(KEY) || "[]"); } catch (_) {}
     const path = u.split("?")[0];
+    const isNew = !arr.some((x) => x.path === path);
     arr = arr.filter((x) => x.path !== path);
     arr.unshift({ path, time: new Date().toLocaleString("zh-CN", { hour12: false }), body: raw.slice(0, 8000) });
-    $persistentStore.write(JSON.stringify(arr.slice(0, 6)), KEY);
-    $notification.post("虎扑开屏：已抓到响应", path.replace(/^https:\/\/goblin\.hupu\.com/, ""), "点此或在 Safari 打开 https://goblin.hupu.com/loon-dump 查看", { openUrl: "https://goblin.hupu.com/loon-dump" });
+    $persistentStore.write(JSON.stringify(arr.slice(0, 15)), KEY);
+    if (isNew) $notification.post("虎扑开屏：已抓到响应", path.replace(/^https:\/\//, ""), "点此或在 Safari 打开 https://goblin.hupu.com/loon-dump 查看", { openUrl: "https://goblin.hupu.com/loon-dump" });
   } catch (e) {
     console.log(`[虎扑开屏] 保存失败：${e}`);
   }
@@ -64,7 +66,8 @@ try {
   const obj = JSON.parse(body);
   // 调试：保存原始响应，Safari 打开 https://goblin.hupu.com/loon-dump 可查看
   dump(url, body);
-  walk(obj, 0);
+  // 只改写广告平台接口；其他命中的请求仅记录，原样放行
+  if (/^https:\/\/goblin\.hupu\.com\/.*\/interfaceAd\//.test(url)) walk(obj, 0);
   body = JSON.stringify(obj);
 } catch (e) {
   console.log(`[虎扑开屏] 解析失败，原样放行：${e}`);
