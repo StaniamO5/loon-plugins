@@ -7,6 +7,8 @@
  *   app_float_layer              浮层广告
  *   real_time_pull_refresh_v2    下拉刷新广告
  *   real_time_second_floor_v2    下拉“二楼”广告
+ * 注意：实时开屏的响应形如 {"launch": "{\"ads\":[...],...}"}，广告列表是嵌在字符串里的 JSON，
+ *   脚本会解析这类字符串字段再处理。
  * 不 reject：返回 {} 或失败时，App 会沿用旧缓存或转去穿山甲/优量汇兜底，
  *   在启动页等满超时（白屏）。这里保留结构，只把广告内容掏空，
  *   让 App 正常得出“这次没有开屏”的结论。
@@ -37,6 +39,14 @@ function walk(node, depth) {
       node[k] = 0;
     } else if (typeof v === "boolean" && SWITCH_KEY.test(k)) {
       node[k] = false;
+    } else if (typeof v === "string" && /^\s*[\[{]/.test(v)) {
+      // 知乎把广告 JSON 再序列化成字符串塞进字段里，如 {"launch": "{\"ads\":[...]}"}
+      // 需要解析 → 掏空 → 再序列化回字符串，保持原有格式
+      try {
+        const inner = JSON.parse(v);
+        walk(inner, depth + 1);
+        node[k] = JSON.stringify(inner);
+      } catch (_) {}
     } else if (v && typeof v === "object") {
       walk(v, depth + 1);
     }
