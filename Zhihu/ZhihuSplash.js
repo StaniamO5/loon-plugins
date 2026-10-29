@@ -10,6 +10,20 @@
 
 let body = $response.body;
 
+// 【临时调试】改写前保存原始响应
+try {
+  const KEY = "zhihu_dump";
+  let arr = [];
+  try { arr = JSON.parse($persistentStore.read(KEY) || "[]"); } catch (_) {}
+  const path = $request.url.split("?")[0];
+  const isNew = !arr.some((x) => x.path === path);
+  arr = arr.filter((x) => x.path !== path);
+  const d = new Date();
+  arr.unshift({ path, query: ($request.url.split("?")[1] || "").slice(0, 300), time: d.toLocaleTimeString("zh-CN", { hour12: false }) + "." + String(d.getMilliseconds()).padStart(3, "0"), body: (body || "").slice(0, 10000) });
+  $persistentStore.write(JSON.stringify(arr.slice(0, 30)), KEY);
+  if (isNew) $notification.post("知乎开屏：已抓到响应", path.replace(/^https:\/\//, ""), "打开 https://api.zhihu.com/loon-dump 查看", { openUrl: "https://api.zhihu.com/loon-dump" });
+} catch (_) {}
+
 // 广告/素材列表 → 清空
 const LIST_KEY = /^(launch_ads|launchAds|ads|ad_list|adList|data|list|items|creatives?|materials?|resources?|splash(es|_list)?)$/i;
 // 时长、次数、倒计时 → 0

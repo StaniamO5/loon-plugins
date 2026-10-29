@@ -20,10 +20,14 @@
 ^https:\/\/api\.zhihu\.com\/(bazaar\/float_window|market\/popovers_v2) reject-dict
 
 [Script]
+# 【临时调试】Safari 打开 https://api.zhihu.com/loon-dump 查看抓到的响应
+http-request ^https:\/\/api\.zhihu\.com\/loon-dump script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Zhihu/ZhihuDump.js, timeout=10, tag=知乎抓包查看
 # 开屏：预下载(launch_v2) 与实时开屏(real_time_launch_v2)，保留结构、掏空内容
 http-response ^https:\/\/api\.zhihu\.com\/commercial_api\/(launch_v2|real_time_launch_v2) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Zhihu/ZhihuSplash.js, requires-body=true, timeout=10, tag=知乎开屏去广告
 # 信息流：推荐、关注、问题下回答列表
 http-response ^https:\/\/api\.zhihu\.com\/(topstory\/recommend|moments(_v3)?\b|v4\/questions\/\d+\/feeds|questions\/\d+\/feeds) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Zhihu/ZhihuFeed.js, requires-body=true, timeout=10, tag=知乎信息流去广告
+# 【临时调试】记录商业化接口及路径含 launch/splash/ad 的响应（不改写）
+http-response ^https:\/\/api\.zhihu\.com\/(?!loon-dump)[^?]*(commercial|launch|splash|advert|\/ads?\/|ad-|_ad|shake) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/main/Zhihu/ZhihuRecord.js, requires-body=true, timeout=10, tag=知乎抓包记录
 
 [MITM]
 hostname = api.zhihu.com
