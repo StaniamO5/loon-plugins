@@ -8,6 +8,9 @@
 #!loon_version=3.2.1(733)
 
 [Rule]
+# 关键：知乎大量请求走 HTTP/3（QUIC/UDP），MitM 解密不了，开屏请求会绕过脚本。
+# 拒绝知乎的 QUIC，App 会自动回落到 TCP 上的 HTTPS，脚本才能接管（需 Loon 3.1.7+）
+AND,((DOMAIN-SUFFIX,zhihu.com),(PROTOCOL,QUIC)),REJECT
 # 兜底：优量汇（腾讯广点通）SDK 的广告请求与素材域名（摇一摇开屏来源）
 DOMAIN-SUFFIX,gdt.qq.com,REJECT
 DOMAIN,sdk.e.qq.com,REJECT
@@ -34,9 +37,9 @@ DOMAIN-KEYWORD,pglstatp-toutiao,REJECT
 
 [Script]
 # 开屏（SDK 预取配置 + 自家开屏）、浮层、下拉刷新与二楼广告：保留结构、掏空内容，避免白屏等待
-http-response ^https:\/\/api\.zhihu\.com\/commercial_api\/(sdk\/prefetch|launch_v2|real_time_launch_v2|app_float_layer|real_time_pull_refresh_v2|real_time_second_floor_v2) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/da76a34/Zhihu/ZhihuSplash.js, requires-body=true, timeout=10, tag=知乎广告位去广告
+http-response ^https:\/\/(api|www)\.zhihu\.com\/commercial_api\/(sdk\/prefetch|launch_v2|real_time_launch_v2|app_float_layer|real_time_pull_refresh_v2|real_time_second_floor_v2) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/da76a34/Zhihu/ZhihuSplash.js, requires-body=true, timeout=10, tag=知乎广告位去广告
 # 信息流：推荐、关注、问题下回答列表
 http-response ^https:\/\/api\.zhihu\.com\/(topstory\/recommend|moments(_v3)?\b|v4\/questions\/\d+\/feeds|questions\/\d+\/feeds) script-path=https://raw.githubusercontent.com/StaniamO5/loon-plugins/da76a34/Zhihu/ZhihuFeed.js, requires-body=true, timeout=10, tag=知乎信息流去广告
 
 [MITM]
-hostname = api.zhihu.com
+hostname = api.zhihu.com, www.zhihu.com
